@@ -1,9 +1,10 @@
+import java.util.Random;
 // find unoccuppied cell with highest currentRes
 
 // row - FOV + NUM_ROWS % NUM_ROWS for donut view. Same for column.
 public class Agent
 {
-    private String id;   // identifier for the agent
+    private int id;   // identifier for the agent
     private int row;
     private int col;
     private int vision; // how many cells in any one direction can be seen
@@ -17,10 +18,28 @@ public class Agent
     protected static Landscape landscape = null;
     protected static int NUM_ROWS;
     protected static int NUM_COLS;
+    protected static int maxAgentID;
+
+    private static int getUniform(int min, int max)
+    {
+        if (min >= max) {
+            throw new IllegalArgumentException("max must be greater than min");
+        }
+
+        Random r = new Random();
+        return r.nextInt((max - min) + 1) + min;
+    }
     
-    public Agent(String id)
+    public Agent(int id, int r, int c)
     {
         this.id = id;
+        this.row = r;
+        this.col = c;
+        this.vision = getUniform(1, 6);
+        this.maxAge = getUniform(60, 100);
+        this.metRate = getUniform(1, 4);
+        this.wealth = getUniform(5, 25);
+        maxAgentID++;
     }
 
     // simple accessor methods below
@@ -44,19 +63,21 @@ public class Agent
     {
         return this.metRate;
     }
-
+    public double getMaxAge()
+    {
+        return this.maxAge;
+    }
     public double getMoveTime()
     {
         return this.t_move;
     }
-
     public double getDeathTime()
     {
         return this.t_death;
     }
 
     // simple mutator methods below
-    public void setRowCol(int row, int col)
+    public void setLocation(int row, int col)
     {
         this.row = row;
         this.col = col;
@@ -69,19 +90,19 @@ public class Agent
     {
         this.metRate = n;
     }
-
+    public void setMaxAge(int a)
+    {
+        this.maxAge = a;
+    }
     public void setMoveTime(double m)
     {
         this.t_move = m;
     }
-
     public void setDeathTime(double m)
     {
         this.t_death = m;
     }
 
-   
-    
     public Cell movement(double t)
     {
         Cell nextCell = findNextCell(this.row, this.col, this.vision);
@@ -115,6 +136,36 @@ public class Agent
         }
 
         return nextCell;
+    }
+
+    public void death(double t)
+    {
+        this.setLocation(null, null);
+        landscape.getCellAt(this.row, this.col).setOccupied(false);
+
+        // return list of empty cells
+        Cell[] emptyList = new Cell[NUM_ROWS*NUM_COLS];
+        int index = 0;
+        for (int i = 0; i < NUM_ROWS; i++)
+        {
+            for (int j = 0; j < NUM_COLS; j++)
+            {
+                if (landscape.getCellAt(i, j).getOccupied() == false)
+                {
+                    emptyList[index] = landscape.getCellAt(i, j);
+                    index++;
+                }
+            }
+        }
+
+        // choose a number between 1 and length at random
+        int length = index;
+        int randomindex = getUniform(0, index);
+        int newRow = emptylist[randomIndex].row;
+        int newCol = emptylist[randomindex].col;
+        // that cell is the new location for our new agent
+        Agent x = new Agent(maxAgentID+1, newRow, newCol);
+
     }
 
     private double getInterMove()
