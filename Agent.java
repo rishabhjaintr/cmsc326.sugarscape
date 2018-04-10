@@ -14,8 +14,9 @@ public class Agent
     private double t_move;
     private double t_death;
 
-    protected static Landscape landscape = NULL;
-
+    protected static Landscape landscape = null;
+    protected static int NUM_ROWS;
+    protected static int NUM_COLS;
     
     public Agent(String id)
     {
